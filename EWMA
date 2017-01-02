@@ -1,0 +1,60 @@
+import pandas as pd
+import matplotlib.pyplot as plot
+import numpy as np
+import sys
+import logging
+
+test = pd.read_excel('Book1.xlsx')
+
+class Technical_Indicators:
+    
+    def error_handleing(self):
+        return '{}. {}, line: {}'.format(sys.exc_info()[0],
+                                        sys.exc_info()[1],
+                                        sys.exc_info()[2].tb_lineno)
+        
+    def ewma(self,df,date_index=None,span=0):
+        #check to make sure a dateframe is entered as an input
+        if "<class 'pandas.core.frame.DataFrame'>" not in str(type(df)):
+             raise Exception('Please insert a DataFrame object, current object \
+                             is a {}'.format(str(type(df))))
+        else:
+            pass
+        
+        checker = []
+        
+        for i,v in enumerate(df,0):
+            checker.append(i)
+        if sum(checker) > 1:
+            raise Exception('DataFrame must only have two columns and an index \
+                             if Date is a column it will be converted to a \
+                             datetimeindex')
+        #check for date time index
+        if date_index is not None:
+            try:
+                if str(type(df.index)) != "<class 'pandas.tseries.index.DatetimeIndex'>":
+                    df.index = pd.to_datetime(df[date_index])
+                    del test[date_index]
+                else:
+                    pass
+            except Exception as e:
+                logging.error(self.error_handleing())        
+        try:    
+            if span is not 0:
+                l = []
+                for i in range(span-1):
+                    l.append(np.nan)
+                l.append(df[0:span].mean().values[0])
+                c_name = df.columns[0]
+                d = list(df[c_name][span:len(df)])
+                def convert(current,previous):
+                    mult = (2/(span+1))
+                    return (mult * current) + ((1-mult)*(previous))                
+                for i,v in enumerate(d,span-1):
+                    l.append(convert(v,l[i]))
+                df['EWMA'] = l
+                return df
+            else:
+                pass
+        except Exception:
+            logging.error(self.error_handleing())
